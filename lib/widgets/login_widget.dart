@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
 import 'package:kbg/constants/shapes_and_styles.dart';
+import 'package:kbg/controller/auth_controller.dart';
 
 class LoginWidget extends StatefulWidget {
   const LoginWidget({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class _LoginWidgetState extends State<LoginWidget> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscureText = true;
+  final _authController = Get.put(AuthController());
   // Toggles the password show status
   void _toggle() {
     setState(() {
@@ -23,7 +25,8 @@ class _LoginWidgetState extends State<LoginWidget> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -79,20 +82,15 @@ class _LoginWidgetState extends State<LoginWidget> {
               SizedBox(
                 height: Get.height * 0.01,
               ),
-              SizedBox(
-                height: Get.height * 0.05,
+              Container(
+                decoration: const BoxDecoration(
+                  color: borderSideColor,
+                ),
                 child: TextField(
                   controller: _emailController,
                   decoration: const InputDecoration(
-                    fillColor: borderSideColor,
-                    filled: true,
+                    contentPadding: EdgeInsets.only(left: 10, right: 10),
                     border: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white70),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white70),
-                    ),
                   ),
                 ),
               ),
@@ -106,15 +104,16 @@ class _LoginWidgetState extends State<LoginWidget> {
               SizedBox(
                 height: Get.height * 0.01,
               ),
-              SizedBox(
-                height: Get.height * 0.05,
+              Container(
+                decoration: const BoxDecoration(
+                  color: borderSideColor,
+                ),
                 child: TextField(
                   controller: _passwordController,
                   obscureText: _obscureText,
                   keyboardType: TextInputType.visiblePassword,
                   decoration: InputDecoration(
-                    fillColor: borderSideColor,
-                    filled: true,
+                    contentPadding: const EdgeInsets.only(left: 10, right: 10),
                     suffix: IconButton(
                         onPressed: _toggle,
                         icon: Icon(_obscureText
@@ -133,13 +132,25 @@ class _LoginWidgetState extends State<LoginWidget> {
                     .copyWith(fontWeight: FontWeight.bold),
               ),
               SizedBox(
-                height: Get.height * 0.1,
+                height: Get.height * 0.08,
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     primary: primaryColor,
                     minimumSize: Size(Get.width, Get.height * 0.05)),
-                onPressed: () {},
+                onPressed: () {
+                  if (_emailController.text.isEmpty ||
+                      _passwordController.text.isEmpty) {
+                    Get.snackbar(
+                      "Required!",
+                      "All fields are required",
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
+                  _authController.loginWithEmailAndPassword(
+                      _emailController.text.trim(),
+                      _passwordController.text.trim());
+                },
                 child: const Text(
                   'Login',
                   style: TextStyle(

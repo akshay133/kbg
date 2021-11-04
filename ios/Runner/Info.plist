@@ -38,6 +38,11 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>Allow access to photo library</string>
+        <key>NSCameraUsageDescription</key>
+        <string>Allow access to camera to capture photos</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>Allow access to microphone</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
