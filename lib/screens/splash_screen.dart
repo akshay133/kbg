@@ -12,7 +12,8 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SlidingUpPanel(
-        minHeight: Get.height * 0.08,
+        minHeight: Get.height * 0.1,
+        maxHeight: Get.height * 0.8,
         panel: const LoginWidget(),
         body: Container(
           height: double.infinity,

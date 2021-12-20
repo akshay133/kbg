@@ -22,11 +22,12 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          textTheme: GoogleFonts.openSansTextTheme(
-            Theme.of(context).textTheme,
-          ),
-          primarySwatch: Colors.blue,
-          scaffoldBackgroundColor: Colors.white),
+        textTheme: GoogleFonts.openSansTextTheme(
+          Theme.of(context).textTheme,
+        ),
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color.fromRGBO(240, 239, 246, 1),
+      ),
       home: const SplashScreen(),
     );
   }

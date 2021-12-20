@@ -7,6 +7,7 @@ import 'package:kbg/screens/client_screen.dart';
 import 'package:kbg/screens/engineer_screen.dart';
 import 'package:kbg/screens/gallery_screen.dart';
 import 'package:kbg/screens/project_screen.dart';
+import 'package:kbg/widgets/drawer.dart';
 
 class HomeScreenMain extends StatelessWidget {
   HomeScreenMain({Key? key}) : super(key: key);
@@ -16,10 +17,12 @@ class HomeScreenMain extends StatelessWidget {
         init: DashboardController(),
         builder: (_) {
           return Scaffold(
+            appBar: AppBar(),
+            drawer: CustomDrawer(),
             body: SafeArea(
               child: IndexedStack(
                 index: _.tabIndex,
-                children: const [
+                children: [
                   ClientScreen(),
                   EngineerScreen(),
                   ProjectScreen(),
@@ -56,7 +59,7 @@ class HomeScreenMain extends StatelessWidget {
                     height: Get.height * 0.034,
                     color: primaryColor,
                   ),
-                  label: 'News',
+                  label: 'Engineer',
                 ),
                 BottomNavigationBarItem(
                   icon: Image.asset(
@@ -68,7 +71,7 @@ class HomeScreenMain extends StatelessWidget {
                     height: Get.height * 0.034,
                     color: primaryColor,
                   ),
-                  label: 'Alerts',
+                  label: 'Project',
                 ),
                 BottomNavigationBarItem(
                   icon: Image.asset(
@@ -80,14 +83,14 @@ class HomeScreenMain extends StatelessWidget {
                     height: Get.height * 0.034,
                     color: primaryColor,
                   ),
-                  label: 'Account',
+                  label: 'Chats',
                 ),
                 BottomNavigationBarItem(
                   icon: Image.asset(
                     'assets/images/gallery.png',
                     height: Get.height * 0.034,
                   ),
-                  label: 'News',
+                  label: 'Gallery',
                   activeIcon: Image.asset(
                     'assets/images/gallery.png',
                     height: Get.height * 0.034,
