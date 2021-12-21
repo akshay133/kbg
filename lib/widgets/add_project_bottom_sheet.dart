@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
+import 'package:kbg/constants/strings.dart';
+import 'package:kbg/controller/auth_controller.dart';
 
 class AddProjectBottomSheet extends StatefulWidget {
   AddProjectBottomSheet({Key? key}) : super(key: key);
@@ -22,7 +24,7 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
   final activitiesController = TextEditingController();
 
   final List _value = [];
-
+  final authController = Get.put(AuthController());
   @override
   void dispose() {
     projectNumberController.dispose();
@@ -130,10 +132,11 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                       activitiesController.text.isEmpty) {
                     Get.snackbar("Error!", "All fields re required!");
                   } else {
-                    String uid = FirebaseAuth.instance.currentUser!.uid;
+                    String? uid = authController.preferences
+                        .getString(ConstStrings.adminId);
                     FirebaseFirestore.instance
                         .collection("projects")
-                        .doc(uid + DateTime.now().toString())
+                        .doc(uid! + DateTime.now().toString())
                         .set({
                       'name': projectNameController.text,
                       'number': projectNumberController.text,

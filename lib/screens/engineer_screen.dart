@@ -79,6 +79,8 @@ class EngineerScreen extends StatelessWidget {
                                       child: CachedNetworkImage(
                                         imageUrl: ds['imgUrl'],
                                         height: Get.height * 0.08,
+                                        width: Get.width * 0.2,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
                                     Column(

@@ -24,7 +24,6 @@ class AuthController extends GetxController {
 
   handleAuth() async {
     preferences = await SharedPreferences.getInstance();
-
     if (preferences.get(ConstStrings.adminId) == null) {
       Get.offAll(const SplashScreen());
     } else {

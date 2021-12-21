@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
 import 'package:kbg/controller/auth_controller.dart';
 import 'package:kbg/controller/dashboard_controller.dart';
+import 'package:kbg/screens/single_info_client_screen.dart';
 import 'package:kbg/widgets/bottom_sheet_widget.dart';
 import 'package:kbg/widgets/signup_users_widget.dart';
 
@@ -64,53 +65,66 @@ class ClientScreen extends StatelessWidget {
                         var ds = snapshot.data!.docs[index];
                         var projects = ds['projects'];
                         print("projects$projects");
+                        print("DS${ds.data()}");
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      clipBehavior: Clip.antiAlias,
-                                      decoration: const BoxDecoration(
-                                          shape: BoxShape.circle),
-                                      child: CachedNetworkImage(
-                                        imageUrl: ds['imgUrl'],
-                                        height: Get.height * 0.08,
+                          child: InkWell(
+                            onTap: () {
+                              Get.to(SingleInfoClientScreen(
+                                name: ds['name'],
+                                imgUrl: ds['imgUrl'],
+                                email: ds['email'],
+                                mobile: ds['mobile'],
+                              ));
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: const BoxDecoration(
+                                            shape: BoxShape.circle),
+                                        child: CachedNetworkImage(
+                                          imageUrl: ds['imgUrl'],
+                                          height: Get.height * 0.08,
+                                          width: Get.width * 0.2,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        Text(
-                                          ds['name'],
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: grayColor),
-                                        ),
-                                        Text(
-                                          ds['title'],
-                                          style: const TextStyle(
-                                              fontSize: 16, color: grayColor),
-                                        ),
-                                      ],
-                                    ),
-                                    const Spacer(),
-                                    Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                            color: const Color(0xff75B3FF),
-                                            borderRadius:
-                                                BorderRadius.circular(20)),
-                                        child: Text(projects.join()))
-                                  ],
-                                )
-                              ],
+                                      Column(
+                                        children: [
+                                          Text(
+                                            ds['name'],
+                                            style: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: grayColor),
+                                          ),
+                                          Text(
+                                            ds['title'],
+                                            style: const TextStyle(
+                                                fontSize: 16, color: grayColor),
+                                          ),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                              color: const Color(0xff75B3FF),
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          child: Text(projects.join()))
+                                    ],
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                         );
