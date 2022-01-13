@@ -11,7 +11,7 @@ class ProjectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 100,
@@ -48,9 +48,6 @@ class ProjectScreen extends StatelessWidget {
                 text: 'All projects',
               ),
               Tab(
-                text: 'On Going',
-              ),
-              Tab(
                 text: 'Completed',
               ),
             ],
@@ -59,7 +56,6 @@ class ProjectScreen extends StatelessWidget {
         body: const TabBarView(
           children: [
             AllProjectsScreen(),
-            Icon(Icons.directions_transit),
             Icon(Icons.directions_bike),
           ],
         ),

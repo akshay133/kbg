@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
 import 'package:kbg/constants/strings.dart';
 import 'package:kbg/controller/auth_controller.dart';
+import 'package:kbg/controller/dashboard_controller.dart';
 
 class AddProjectBottomSheet extends StatefulWidget {
   AddProjectBottomSheet({Key? key}) : super(key: key);
@@ -22,9 +23,40 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
   final projectTypeController = TextEditingController();
 
   final activitiesController = TextEditingController();
+  final activityController = TextEditingController();
 
-  final List _value = [];
+  final List _moreActivitiesList = [];
   final authController = Get.put(AuthController());
+  final dashController = Get.put(DashboardController());
+  DateTime? selectedDate;
+  DateTime? selectedEndDate;
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectEndDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedEndDate = picked;
+      });
+    }
+  }
+
   @override
   void dispose() {
     projectNumberController.dispose();
@@ -105,31 +137,93 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                     contentPadding: const EdgeInsets.all(8)),
               ),
             ),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Select Start and End date of the project',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    _selectDate(context);
+                  },
+                  child: Text(selectedDate == null
+                      ? 'Start Date'
+                      : "${selectedDate?.toLocal()}".split(' ')[0]),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _selectEndDate(context);
+                  },
+                  child: Text(selectedEndDate == null
+                      ? 'End Date'
+                      : "${selectedEndDate?.toLocal()}".split(' ')[0]),
+                ),
+              ],
+            ),
             SizedBox(
               height: Get.height * 0.02,
             ),
-            Container(
-              height: Get.height * 0.1,
-              decoration: BoxDecoration(
-                  color: Colors.white, borderRadius: BorderRadius.circular(8)),
-              child: TextField(
-                controller: activitiesController,
-                maxLines: 5,
-                minLines: 1,
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    labelText: 'Activities',
-                    hintText: 'Some notes about the client',
-                    hintStyle: TextStyle(color: grayColor.withOpacity(0.5)),
-                    contentPadding: const EdgeInsets.all(8)),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Add activities',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('Add Activity'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                    controller: activityController,
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        dashController.updateList(
+                                            activityController.text);
+                                        Get.back();
+                                      },
+                                      child: const Text('Add'))
+                                ],
+                              ),
+                            );
+                          });
+                    },
+                    child: Text('Add'))
+              ],
             ),
+            SizedBox(
+              height: Get.height * 0.02,
+            ),
+            GetBuilder<DashboardController>(
+                init: DashboardController(),
+                builder: (ctl) {
+                  return Column(
+                    children: List.generate(
+                        ctl.activitiesList.length,
+                        (index) => Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                  '${index + 1}. ${ctl.activitiesList.join('')}'),
+                            )),
+                  );
+                }),
             ElevatedButton(
                 onPressed: () {
                   if (projectNameController.text.isEmpty &&
                       projectNumberController.text.isEmpty &&
-                      projectTypeController.text.isEmpty &&
-                      activitiesController.text.isEmpty) {
+                      projectTypeController.text.isEmpty) {
                     Get.snackbar("Error!", "All fields re required!");
                   } else {
                     String? uid = authController.preferences
@@ -141,7 +235,7 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                       'name': projectNameController.text,
                       'number': projectNumberController.text,
                       'type': projectTypeController.text,
-                      'activity': activitiesController.text,
+                      'activities': activitiesController.text,
                       'assigned': [],
                       'images': []
                     }).then((value) {

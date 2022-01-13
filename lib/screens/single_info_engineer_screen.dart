@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:kbg/widgets/update_client_info_widget.dart';
 
-class SingleInfoClientScreen extends StatelessWidget {
-  const SingleInfoClientScreen(
+class SingleInfoEngineerScreen extends StatelessWidget {
+  const SingleInfoEngineerScreen(
       {Key? key,
       required this.imgUrl,
       required this.name,
@@ -15,23 +14,11 @@ class SingleInfoClientScreen extends StatelessWidget {
   final String name;
   final String mobile;
   final String email;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Client Info'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) => const AlertDialog(
-                        title: Text('Update info'),
-                        content: UpdateClientInfoWidget()));
-              },
-              icon: Icon(Icons.edit))
-        ],
+        title: Text('Engineer Info'),
       ),
       body: Center(
         child: Padding(

@@ -150,6 +150,9 @@ class AuthController extends GetxController {
       Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
     }
   }
+  // updateClientInfo(){
+  //   FirebaseFirestore.instance.collection('clients').where("field")
+  // }
 
   logout() async {
     await _auth.signOut();
