@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
+import 'package:kbg/constants/strings.dart';
+import 'package:kbg/controller/auth_controller.dart';
 import 'package:kbg/controller/dashboard_controller.dart';
 import 'package:kbg/screens/single_info_engineer_screen.dart';
 import 'package:kbg/widgets/bottom_sheet_widget.dart';
@@ -11,6 +13,7 @@ import 'package:kbg/widgets/signup_users_widget.dart';
 class EngineerScreen extends StatelessWidget {
   EngineerScreen({Key? key}) : super(key: key);
   final dashboardController = Get.put(DashboardController());
+  final authController = Get.put(AuthController());
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -55,22 +58,21 @@ class EngineerScreen extends StatelessWidget {
                 } else if (snapshot.hasError) {
                   Get.snackbar("Error", snapshot.error.toString());
                 }
+                var ds = snapshot.data!.docs;
                 return Expanded(
                   child: ListView.builder(
-                      itemCount: snapshot.data!.size,
+                      itemCount: ds.length,
                       itemBuilder: (ctx, index) {
-                        var ds = snapshot.data!.docs[index];
-                        var projects = ds['projects'];
-                        print("projects${ds.data()}");
+                        var data = ds[index];
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: InkWell(
                             onTap: () {
                               Get.to(SingleInfoEngineerScreen(
-                                email: ds['email'],
-                                name: ds['name'],
-                                mobile: ds['mobile'],
-                                imgUrl: ds['imgUrl'],
+                                email: data['email'],
+                                name: data['name'],
+                                mobile: data['mobile'],
+                                imgUrl: data['imgUrl'],
                               ));
                             },
                             child: Container(
@@ -87,7 +89,7 @@ class EngineerScreen extends StatelessWidget {
                                         decoration: const BoxDecoration(
                                             shape: BoxShape.circle),
                                         child: CachedNetworkImage(
-                                          imageUrl: ds['imgUrl'],
+                                          imageUrl: data['imgUrl'],
                                           height: Get.height * 0.08,
                                           width: Get.width * 0.2,
                                           fit: BoxFit.cover,
@@ -96,14 +98,14 @@ class EngineerScreen extends StatelessWidget {
                                       Column(
                                         children: [
                                           Text(
-                                            ds['name'],
+                                            data['name'],
                                             style: const TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
                                                 color: grayColor),
                                           ),
                                           Text(
-                                            ds['title'],
+                                            data['title'],
                                             style: const TextStyle(
                                                 fontSize: 16, color: grayColor),
                                           ),
@@ -116,7 +118,11 @@ class EngineerScreen extends StatelessWidget {
                                               color: const Color(0xff75B3FF),
                                               borderRadius:
                                                   BorderRadius.circular(20)),
-                                          child: Text(projects.join()))
+                                          child: Column(
+                                              children: List.generate(
+                                                  ds[index]['projects'].length,
+                                                  (index) => Text(
+                                                      '${ds[index]['projects']}'))))
                                     ],
                                   )
                                 ],

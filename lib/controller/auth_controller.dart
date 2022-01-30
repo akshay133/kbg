@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:kbg/constants/shapes_and_styles.dart';
 import 'package:kbg/constants/strings.dart';
 import 'package:kbg/screens/home_screen_main.dart';
 import 'package:kbg/screens/splash_screen.dart';
 import 'package:kbg/widgets/bottom_sheet_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,7 +16,9 @@ class AuthController extends GetxController {
   var adminId = ''.obs;
   var adminProfileImg = ''.obs;
   var adminEmail = '';
-  late SharedPreferences preferences;
+  var engineerId = ''.obs;
+  late GetStorage box;
+
   @override
   void onReady() {
     handleAuth();
@@ -23,8 +26,11 @@ class AuthController extends GetxController {
   }
 
   handleAuth() async {
-    preferences = await SharedPreferences.getInstance();
-    if (preferences.get(ConstStrings.adminId) == null) {
+    box = GetStorage();
+    box.read(ConstStrings.engineerId);
+    box.read(ConstStrings.clientId);
+
+    if (box.read(ConstStrings.adminId) == null) {
       Get.offAll(const SplashScreen());
     } else {
       Get.offAll(HomeScreenMain());
@@ -36,10 +42,8 @@ class AuthController extends GetxController {
       await _auth
           .signInWithEmailAndPassword(email: email, password: password)
           .then((value) async {
-        preferences = await SharedPreferences.getInstance();
-        preferences.setString(ConstStrings.adminId, value.user!.uid);
-        preferences.setString(
-            ConstStrings.adminEmail, value.user!.email.toString());
+        box.write(ConstStrings.adminId, value.user!.uid);
+        box.write(ConstStrings.adminEmail, value.user!.email.toString());
         updateAdminEmail(value.user!.email);
         Get.offAll(HomeScreenMain());
       });
@@ -67,6 +71,7 @@ class AuthController extends GetxController {
           .then((value) {
         if (value.user != null) {
           Get.snackbar("Registered", "");
+          box.write(ConstStrings.clientId, value.user!.uid);
           Get.bottomSheet(BottomSheetWidget());
         }
       });
@@ -83,6 +88,7 @@ class AuthController extends GetxController {
           .then((value) {
         if (value.user != null) {
           Get.snackbar("Registered", "");
+          box.write(ConstStrings.engineerId, value.user!.uid);
           Get.bottomSheet(BottomSheetWidget());
         }
       });
@@ -97,7 +103,7 @@ class AuthController extends GetxController {
       Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
       await FirebaseFirestore.instance
           .collection("engineers")
-          .doc(_auth.currentUser!.uid + DateTime.now().toString())
+          .doc(box.read(ConstStrings.engineerId))
           .set({
         "name": name,
         'title': title,
@@ -107,7 +113,32 @@ class AuthController extends GetxController {
         'imgUrl': imgUrl,
         'gender': gender,
         'projects': [],
-        'uid': _auth.currentUser!.uid
+        'uid': box.read(ConstStrings.engineerId)
+      }).then((value) {
+        Get.snackbar("New Engineer Added", "");
+      });
+    } on FirebaseException catch (err) {
+      Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  updateEngineers(String name, String title, String phone, String mobile,
+      String email, String imgUrl, String gender, List projects) async {
+    try {
+      Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
+      await FirebaseFirestore.instance
+          .collection("engineers")
+          .doc(box.read(ConstStrings.engineerId))
+          .update({
+        "name": name,
+        'title': title,
+        'phone': phone,
+        'mobile': mobile,
+        'email': email,
+        'imgUrl': imgUrl,
+        'gender': gender,
+        'projects': FieldValue.arrayUnion(projects),
+        'uid': box.read(ConstStrings.engineerId)
       }).then((value) {
         Get.snackbar("New Engineer Added", "");
       });
@@ -126,37 +157,90 @@ class AuthController extends GetxController {
       String activity,
       String imgUrl,
       String gender) async {
+    final setData = {
+      "name": name,
+      'title': title,
+      'phone': phone,
+      'mobile': mobile,
+      'website': website,
+      'email': email,
+      'activity': activity,
+      'imgUrl': imgUrl,
+      'gender': gender,
+      'projects': [],
+      'uid': box.read(ConstStrings.clientId)
+    };
     try {
       Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
       await FirebaseFirestore.instance
           .collection("clients")
-          .doc(_auth.currentUser!.uid + DateTime.now().toString())
-          .set({
-        "name": name,
-        'title': title,
-        'phone': phone,
-        'mobile': mobile,
-        'website': website,
-        'email': email,
-        'activity': activity,
-        'imgUrl': imgUrl,
-        'gender': gender,
-        'projects': [],
-        'uid': _auth.currentUser!.uid
-      }).then((value) {
+          .doc(box.read(ConstStrings.clientId))
+          .set(setData)
+          .then((value) {
         Get.snackbar("New Client Added", "");
       });
     } on FirebaseException catch (err) {
       Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
     }
   }
-  // updateClientInfo(){
-  //   FirebaseFirestore.instance.collection('clients').where("field")
-  // }
+
+  updateSingleClientInfo(
+      String uid, String name, String phone, String email, String imgUrl) {
+    final updateData = {
+      "name": name,
+      'phone': phone,
+      'email': email,
+      'imgUrl': imgUrl,
+    };
+    try {
+      Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
+      FirebaseFirestore.instance
+          .collection('clients')
+          .doc(uid)
+          .update(updateData);
+    } on FirebaseException catch (err) {
+      Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  updateClients(
+      String name,
+      String title,
+      String phone,
+      String mobile,
+      String website,
+      String email,
+      String activity,
+      String imgUrl,
+      String gender,
+      List projects) {
+    final updateData = {
+      "name": name,
+      'title': title,
+      'phone': phone,
+      'mobile': mobile,
+      'website': website,
+      'email': email,
+      'activity': activity,
+      'imgUrl': imgUrl,
+      'gender': gender,
+      'projects': FieldValue.arrayUnion(projects),
+      'uid': box.read(ConstStrings.clientId)
+    };
+    try {
+      Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
+      FirebaseFirestore.instance
+          .collection('clients')
+          .doc(box.read(ConstStrings.clientId))
+          .update(updateData);
+    } on FirebaseException catch (err) {
+      Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 
   logout() async {
     await _auth.signOut();
-    preferences.clear().then((value) => Get.offAll(SplashScreen()));
+    box.erase().then((value) => Get.offAll(SplashScreen()));
   }
 
   updateClientId(id) {
@@ -176,7 +260,6 @@ class AuthController extends GetxController {
 
   updateAdminEmail(email) async {
     adminEmail = email;
-
     update();
   }
 }

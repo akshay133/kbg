@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
+import 'package:kbg/constants/strings.dart';
 import 'package:kbg/controller/auth_controller.dart';
 import 'package:kbg/controller/dashboard_controller.dart';
 import 'package:kbg/screens/single_info_client_screen.dart';
@@ -58,23 +59,21 @@ class ClientScreen extends StatelessWidget {
                 } else if (snapshot.hasError) {
                   Get.snackbar("Error", snapshot.error.toString());
                 }
+                var ds = snapshot.data!.docs;
                 return Expanded(
                   child: ListView.builder(
-                      itemCount: snapshot.data!.size,
+                      itemCount: ds.length,
                       itemBuilder: (ctx, index) {
-                        var ds = snapshot.data!.docs[index];
-                        var projects = ds['projects'];
-                        print("projects$projects");
-                        print("DS${ds.data()}");
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: InkWell(
                             onTap: () {
                               Get.to(SingleInfoClientScreen(
-                                name: ds['name'],
-                                imgUrl: ds['imgUrl'],
-                                email: ds['email'],
-                                mobile: ds['mobile'],
+                                name: ds[index]['name'],
+                                imgUrl: ds[index]['imgUrl'],
+                                email: ds[index]['email'],
+                                mobile: ds[index]['mobile'],
+                                uid: ds[index]['uid'],
                               ));
                             },
                             child: Container(
@@ -91,7 +90,7 @@ class ClientScreen extends StatelessWidget {
                                         decoration: const BoxDecoration(
                                             shape: BoxShape.circle),
                                         child: CachedNetworkImage(
-                                          imageUrl: ds['imgUrl'],
+                                          imageUrl: ds[index]['imgUrl'],
                                           height: Get.height * 0.08,
                                           width: Get.width * 0.2,
                                           fit: BoxFit.cover,
@@ -100,14 +99,14 @@ class ClientScreen extends StatelessWidget {
                                       Column(
                                         children: [
                                           Text(
-                                            ds['name'],
+                                            ds[index]['name'],
                                             style: const TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
                                                 color: grayColor),
                                           ),
                                           Text(
-                                            ds['title'],
+                                            ds[index]['title'],
                                             style: const TextStyle(
                                                 fontSize: 16, color: grayColor),
                                           ),
@@ -120,7 +119,11 @@ class ClientScreen extends StatelessWidget {
                                               color: const Color(0xff75B3FF),
                                               borderRadius:
                                                   BorderRadius.circular(20)),
-                                          child: Text(projects.join()))
+                                          child: Column(
+                                              children: List.generate(
+                                                  ds[index]['projects'].length,
+                                                  (index) => Text(
+                                                      '${ds[index]['projects']}'))))
                                     ],
                                   )
                                 ],

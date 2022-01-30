@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kbg/constants/colors.dart';
+import 'package:kbg/constants/strings.dart';
 import 'package:kbg/controller/auth_controller.dart';
 import 'package:kbg/controller/dashboard_controller.dart';
 
@@ -47,7 +49,7 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
 
   uploadPhoto(File image) {
     DateTime time = DateTime.now();
-    String filename = 'images/clients/${time.toString()}';
+    String filename = 'images/engineers/${time.toString()}';
     try {
       final ref = FirebaseStorage.instance.ref(filename);
       UploadTask task = ref.putFile(image);
@@ -304,8 +306,7 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
                         Get.back();
                         if (photoUrl == null) {
                           print("error");
-                        }
-                        if (ctl.isEngineer == false) {
+                        } else if (ctl.isEngineer == false) {
                           _authController.storeClientData(
                               _nameController.text,
                               _titleController.text,

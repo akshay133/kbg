@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kbg/constants/colors.dart';
+import 'package:kbg/controller/auth_controller.dart';
 
 class UpdateClientInfoWidget extends StatefulWidget {
-  const UpdateClientInfoWidget({Key? key}) : super(key: key);
-
+  const UpdateClientInfoWidget({Key? key, required this.uid}) : super(key: key);
+  final String uid;
   @override
   _UpdateClientInfoWidgetState createState() => _UpdateClientInfoWidgetState();
 }
@@ -18,6 +19,7 @@ class _UpdateClientInfoWidgetState extends State<UpdateClientInfoWidget> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final authController = Get.put(AuthController());
   File? _image;
   String? photoUrl;
   _imgFromGallery() async {
@@ -84,7 +86,17 @@ class _UpdateClientInfoWidgetState extends State<UpdateClientInfoWidget> {
           controller: _emailController,
           decoration: InputDecoration(hintText: 'email'),
         ),
-        ElevatedButton(onPressed: () {}, child: Text('Update'))
+        ElevatedButton(
+            onPressed: () {
+              Get.back();
+              authController.updateSingleClientInfo(
+                  widget.uid,
+                  _nameController.text,
+                  _phoneController.text,
+                  _emailController.text.trim(),
+                  photoUrl!);
+            },
+            child: Text('Update'))
       ],
     );
   }

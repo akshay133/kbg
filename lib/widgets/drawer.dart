@@ -12,7 +12,7 @@ class CustomDrawer extends StatelessWidget {
     return GetBuilder<AuthController>(
         init: AuthController(),
         builder: (cotroller) {
-          var email = cotroller.preferences.getString(ConstStrings.adminEmail);
+          var email = cotroller.box.read(ConstStrings.adminEmail);
           print("email$email");
           return Drawer(
             child: ListView(

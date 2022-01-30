@@ -9,8 +9,10 @@ class SingleInfoClientScreen extends StatelessWidget {
       required this.imgUrl,
       required this.name,
       required this.mobile,
-      required this.email})
+      required this.email,
+      required this.uid})
       : super(key: key);
+  final String uid;
   final String imgUrl;
   final String name;
   final String mobile;
@@ -26,9 +28,11 @@ class SingleInfoClientScreen extends StatelessWidget {
               onPressed: () {
                 showDialog(
                     context: context,
-                    builder: (context) => const AlertDialog(
+                    builder: (context) => AlertDialog(
                         title: Text('Update info'),
-                        content: UpdateClientInfoWidget()));
+                        content: UpdateClientInfoWidget(
+                          uid: uid,
+                        )));
               },
               icon: Icon(Icons.edit))
         ],

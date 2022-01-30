@@ -21,15 +21,14 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
   final projectNameController = TextEditingController();
 
   final projectTypeController = TextEditingController();
-
-  final activitiesController = TextEditingController();
   final activityController = TextEditingController();
 
-  final List _moreActivitiesList = [];
   final authController = Get.put(AuthController());
   final dashController = Get.put(DashboardController());
   DateTime? selectedDate;
   DateTime? selectedEndDate;
+  String defaultValue = "Select here";
+  int? selectedIndex;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -58,11 +57,17 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
   }
 
   @override
+  void initState() {
+    dashController.activitiesList.clear();
+    super.initState();
+  }
+
+  @override
   void dispose() {
     projectNumberController.dispose();
     projectNameController.dispose();
     projectTypeController.dispose();
-    activitiesController.dispose();
+    activityController.dispose();
     super.dispose();
   }
 
@@ -215,7 +220,7 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                         (index) => Align(
                               alignment: Alignment.topLeft,
                               child: Text(
-                                  '${index + 1}. ${ctl.activitiesList.join('')}'),
+                                  '${index + 1}. ${ctl.activitiesList[index]}'),
                             )),
                   );
                 }),
@@ -226,20 +231,23 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                       projectTypeController.text.isEmpty) {
                     Get.snackbar("Error!", "All fields re required!");
                   } else {
-                    String? uid = authController.preferences
-                        .getString(ConstStrings.adminId);
                     FirebaseFirestore.instance
                         .collection("projects")
-                        .doc(uid! + DateTime.now().toString())
+                        .doc(projectNumberController.text.trim())
                         .set({
                       'name': projectNameController.text,
                       'number': projectNumberController.text,
                       'type': projectTypeController.text,
-                      'activities': activitiesController.text,
+                      'start_date':
+                          "${selectedEndDate?.toLocal()}".split(' ')[0],
+                      'end_date': "${selectedEndDate?.toLocal()}".split(' ')[0],
+                      'activities': dashController.activitiesList,
                       'assigned': [],
-                      'images': []
+                      'imagesUrls': [],
+                      'percentage': 0
                     }).then((value) {
                       Get.back();
+                      assignedToClientPop(projectNumberController.text.trim());
                     });
                   }
                 },
@@ -248,5 +256,153 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
         ),
       ),
     );
+  }
+
+  void assignedToClientPop(String projectNum) {
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+              title: Text('Assigned to Clients'),
+              actions: [TextButton(onPressed: () {}, child: Text('Next'))],
+              content: StatefulBuilder(
+                builder: (ctx, setState) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection("clients")
+                              .snapshots(),
+                          builder: (ctx, snapshot) {
+                            if (!snapshot.hasData) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else {
+                              var ds = snapshot.data!.docs;
+                              return Container(
+                                height: 200,
+                                width: 300,
+                                child: ListView.builder(
+                                    itemCount: ds.length,
+                                    itemBuilder: (ctx, index) {
+                                      var data = ds[index];
+                                      return Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: Colors.amberAccent),
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                        child: ListTile(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedIndex = index;
+                                            });
+                                            assignedProjectToClient(
+                                                data['name'],
+                                                data['title'],
+                                                data['phone'],
+                                                data['mobile'],
+                                                data['website'],
+                                                data['email'],
+                                                data['activity'],
+                                                data['imgUrl'],
+                                                data['gender'],
+                                                projectNum); // assignedProjectToClient(data.get('name'));
+                                          },
+                                          title: Text(data['name']),
+                                          leading: Container(
+                                            clipBehavior: Clip.antiAlias,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: CachedNetworkImage(
+                                              imageUrl: data['imgUrl'],
+                                              height: 50,
+                                              width: 50,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          trailing: selectedIndex == index
+                                              ? Icon(Icons.done)
+                                              : null,
+                                        ),
+                                      );
+                                    }),
+                              );
+                            }
+                          }),
+                    ],
+                  );
+                },
+              ));
+        });
+  }
+
+  void assignedToEngineersPop() {
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+              title: Text('Assigned to Engineers'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection("engineers")
+                          .snapshots(),
+                      builder: (ctx, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else {
+                          return Container(
+                            height: 300,
+                            width: 300,
+                            child: ListView.builder(
+                                itemCount: snapshot.data?.docs.length,
+                                itemBuilder: (ctx, index) {
+                                  DocumentSnapshot data =
+                                      snapshot.data!.docs[index];
+                                  return Container(
+                                    margin: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.amberAccent),
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: ListTile(
+                                      title: Text(data.get('name')),
+                                      leading: Container(
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: CachedNetworkImage(
+                                          imageUrl: data.get('imgUrl'),
+                                          height: 50,
+                                          width: 50,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          );
+                        }
+                      })
+                ],
+              ));
+        });
+  }
+
+  void assignedProjectToClient(name, title, phone, mobile, website, email,
+      activity, imgUrl, gender, projectID) {
+    authController.updateClients(name, title, phone, mobile, website, email,
+        activity, imgUrl, gender, [projectID]);
   }
 }

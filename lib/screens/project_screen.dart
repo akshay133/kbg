@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
 import 'package:kbg/screens/all_projects_screen.dart';
+import 'package:kbg/screens/completed_project_screen.dart';
 import 'package:kbg/widgets/add_project_bottom_sheet.dart';
 import 'package:kbg/widgets/signup_users_widget.dart';
 
@@ -53,10 +54,10 @@ class ProjectScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             AllProjectsScreen(),
-            Icon(Icons.directions_bike),
+            CompletedProjectScreen(),
           ],
         ),
       ),
