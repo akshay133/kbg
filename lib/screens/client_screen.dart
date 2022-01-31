@@ -123,7 +123,7 @@ class ClientScreen extends StatelessWidget {
                                               children: List.generate(
                                                   ds[index]['projects'].length,
                                                   (index) => Text(
-                                                      '${ds[index]['projects']}'))))
+                                                      '${ds[index]['projects'][index]}'))))
                                     ],
                                   )
                                 ],

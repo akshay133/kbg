@@ -22,6 +22,7 @@ class _SingleProjectInfoScreenState extends State<SingleProjectInfoScreen> {
   File? _image;
   String? photoUrl;
   final ImagePicker _picker = ImagePicker();
+  bool _loading = false;
   _imgFromCamera() async {
     final pickedImageFile =
         await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
@@ -66,8 +67,9 @@ class _SingleProjectInfoScreenState extends State<SingleProjectInfoScreen> {
                 percent:
                     double.parse(widget.snapshot.get('percentage').toString()),
                 center: Text(
-                  "${widget.snapshot.get('percentage').toString()}",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                  widget.snapshot.get('percentage').toString(),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 20.0),
                 ),
                 circularStrokeCap: CircularStrokeCap.butt,
                 backgroundColor: Colors.yellow,
@@ -75,7 +77,7 @@ class _SingleProjectInfoScreenState extends State<SingleProjectInfoScreen> {
               ),
               TextField(
                 controller: percentageController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     hintText: 'Add percentage of the running project'),
               ),
               InkWell(
@@ -85,7 +87,7 @@ class _SingleProjectInfoScreenState extends State<SingleProjectInfoScreen> {
                 child: Container(
                   margin: EdgeInsets.only(top: 20),
                   child: _image == null
-                      ? Icon(
+                      ? const Icon(
                           Icons.camera_alt,
                           size: 50,
                         )
@@ -99,15 +101,34 @@ class _SingleProjectInfoScreenState extends State<SingleProjectInfoScreen> {
               ),
               ElevatedButton(
                   onPressed: () {
-                    FirebaseFirestore.instance
-                        .collection('projects')
-                        .doc(widget.snapshot.get('number'))
-                        .update({
-                      'percentage': percentageController.text,
-                      'imagesUrls': FieldValue.arrayUnion([photoUrl.toString()])
-                    });
+                    if (percentageController.text.isNotEmpty &&
+                        photoUrl != null) {
+                      setState(() => _loading = true);
+                      FirebaseFirestore.instance
+                          .collection('projects')
+                          .doc(widget.snapshot.get('number'))
+                          .update({
+                        'percentage': percentageController.text,
+                        'imagesUrls':
+                            FieldValue.arrayUnion([photoUrl.toString()])
+                      }).then((value) {
+                        setState(() => _loading = false);
+                        Get.snackbar("Updated", "Successfully");
+                      });
+                    } else {
+                      setState(() => _loading = false);
+                      Get.snackbar("Error!", 'All field required');
+                    }
                   },
-                  child: Text('Update'))
+                  child: _loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text('Update'))
             ],
           ),
         ),

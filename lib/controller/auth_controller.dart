@@ -11,7 +11,6 @@ import 'package:kbg/widgets/bottom_sheet_widget.dart';
 
 class AuthController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  Rxn<User> firebaseUser = Rxn<User>();
   var clientId = ''.obs;
   var adminId = ''.obs;
   var adminProfileImg = ''.obs;
@@ -203,36 +202,47 @@ class AuthController extends GetxController {
     }
   }
 
-  updateClients(
-      String name,
-      String title,
-      String phone,
-      String mobile,
-      String website,
-      String email,
-      String activity,
-      String imgUrl,
-      String gender,
-      List projects) {
+  updateClientsProjects(uid, projectIds) {
     final updateData = {
-      "name": name,
-      'title': title,
-      'phone': phone,
-      'mobile': mobile,
-      'website': website,
-      'email': email,
-      'activity': activity,
-      'imgUrl': imgUrl,
-      'gender': gender,
-      'projects': FieldValue.arrayUnion(projects),
-      'uid': box.read(ConstStrings.clientId)
+      'projects': FieldValue.arrayUnion([projectIds]),
     };
     try {
       Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
       FirebaseFirestore.instance
           .collection('clients')
-          .doc(box.read(ConstStrings.clientId))
-          .update(updateData);
+          .doc(uid)
+          .update(updateData)
+          .then((value) {
+        FirebaseFirestore.instance
+            .collection("projects")
+            .doc(projectIds)
+            .update({
+          'assigned': FieldValue.arrayUnion([uid])
+        });
+      });
+    } on FirebaseException catch (err) {
+      Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  updateEngineersProjects(uid, projectIds) {
+    final updateData = {
+      'projects': FieldValue.arrayUnion([projectIds]),
+    };
+    try {
+      Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
+      FirebaseFirestore.instance
+          .collection('engineers')
+          .doc(uid)
+          .update(updateData)
+          .then((value) {
+        FirebaseFirestore.instance
+            .collection("projects")
+            .doc(projectIds)
+            .update({
+          'assigned': FieldValue.arrayUnion([uid])
+        });
+      });
     } on FirebaseException catch (err) {
       Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
     }
