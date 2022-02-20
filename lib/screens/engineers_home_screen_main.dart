@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
 import 'package:kbg/controller/dashboard_controller.dart';
-import 'package:kbg/screens/chats_screen.dart';
-import 'package:kbg/screens/client_screen.dart';
-import 'package:kbg/screens/engineer_screen.dart';
 import 'package:kbg/screens/gallery_screen.dart';
-import 'package:kbg/screens/project_screen.dart';
 import 'package:kbg/widgets/drawer.dart';
 
-class HomeScreenMain extends StatelessWidget {
-  HomeScreenMain({Key? key}) : super(key: key);
+import 'admin_chats.dart';
+import 'clients_engineers_project_screen.dart';
+
+class EngineersHomeScreenMain extends StatelessWidget {
+  const EngineersHomeScreenMain({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<DashboardController>(
@@ -19,19 +19,19 @@ class HomeScreenMain extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.white,
+              titleTextStyle: TextStyle(color: Colors.black),
               iconTheme: IconThemeData(color: Colors.black),
+              title: Text('Welcome'),
             ),
             drawer: CustomDrawer(
-              user: 'admin',
+              user: 'engineer',
             ),
             body: SafeArea(
               child: IndexedStack(
                 index: _.tabIndex,
                 children: [
-                  ClientScreen(),
-                  EngineerScreen(),
-                  ProjectScreen(),
-                  ChatsScreen(),
+                  ClientsAndEngineersProjectScreen(),
+                  AdminChatsScreen(),
                   GalleryScreen()
                 ],
               ),
@@ -42,30 +42,6 @@ class HomeScreenMain extends StatelessWidget {
               selectedItemColor: primaryColor,
               currentIndex: _.tabIndex,
               items: [
-                BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'assets/images/client.png',
-                    height: Get.height * 0.034,
-                  ),
-                  activeIcon: Image.asset(
-                    'assets/images/client.png',
-                    height: Get.height * 0.034,
-                    color: primaryColor,
-                  ),
-                  label: 'Client',
-                ),
-                BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'assets/images/engineer.png',
-                    height: Get.height * 0.034,
-                  ),
-                  activeIcon: Image.asset(
-                    'assets/images/engineer.png',
-                    height: Get.height * 0.034,
-                    color: primaryColor,
-                  ),
-                  label: 'Engineer',
-                ),
                 BottomNavigationBarItem(
                   icon: Image.asset(
                     'assets/images/project.png',

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/strings.dart';
 import 'package:kbg/controller/auth_controller.dart';
-import 'package:kbg/screens/single_project_info_screen.dart';
+import 'package:kbg/controller/dashboard_controller.dart';
+import 'package:kbg/screens/activities_screen.dart';
+import 'package:kbg/screens/single_project_info_update_screen.dart';
 
 class AllProjectsScreen extends StatefulWidget {
   AllProjectsScreen({Key? key}) : super(key: key);
@@ -15,6 +17,7 @@ class AllProjectsScreen extends StatefulWidget {
 
 class _AllProjectsScreenState extends State<AllProjectsScreen> {
   final authController = Get.put(AuthController());
+  final dashbordController = Get.put(DashboardController());
   int? selectedIndex;
   int? selectedIndex2;
   @override
@@ -33,9 +36,9 @@ class _AllProjectsScreenState extends State<AllProjectsScreen> {
                   padding: const EdgeInsets.all(6.0),
                   child: ListTile(
                     onTap: () {
-                      Get.to(SingleProjectInfoScreen(
-                        snapshot: snapshot.data!.docs[index],
-                      ));
+                      dashbordController
+                          .updateDocSnapshot(snapshot.data!.docs[index]);
+                      Get.to(SingleProjectInfoUpdateScreen());
                     },
                     trailing: IconButton(
                       icon: Icon(Icons.more_vert_outlined),
@@ -44,7 +47,7 @@ class _AllProjectsScreenState extends State<AllProjectsScreen> {
                             snapshot.data!.docs[index]['number']);
                       },
                     ),
-                    tileColor: Colors.amberAccent,
+                    tileColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -200,6 +203,9 @@ class _AllProjectsScreenState extends State<AllProjectsScreen> {
                                           fit: BoxFit.cover,
                                         ),
                                       ),
+                                      trailing: selectedIndex2 == index
+                                          ? Icon(Icons.done)
+                                          : null,
                                     ),
                                   );
                                 }),

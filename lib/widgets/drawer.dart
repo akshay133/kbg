@@ -5,24 +5,30 @@ import 'package:kbg/constants/strings.dart';
 import 'package:kbg/controller/auth_controller.dart';
 
 class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({Key? key}) : super(key: key);
-
+  CustomDrawer({Key? key, required this.user}) : super(key: key);
+  final String user;
+  String email = '';
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AuthController>(
         init: AuthController(),
         builder: (cotroller) {
-          var email = cotroller.box.read(ConstStrings.adminEmail);
-          print("email$email");
+          if (user == 'admin') {
+            email = cotroller.box.read(ConstStrings.adminEmail);
+          } else if (user == 'client') {
+            email = cotroller.box.read(ConstStrings.clientEmail);
+          } else if (user == 'engineer') {
+            email = cotroller.box.read(ConstStrings.engineerEmail);
+          }
           return Drawer(
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
                 DrawerHeader(
-                    decoration: BoxDecoration(color: Colors.blue),
+                    decoration: BoxDecoration(color: Colors.amberAccent),
                     child: Center(
                       child: Text(
-                        email == null ? cotroller.adminEmail : email.toString(),
+                        email,
                         style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,

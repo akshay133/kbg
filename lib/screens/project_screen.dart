@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/constants/colors.dart';
+import 'package:kbg/screens/activities_screen.dart';
 import 'package:kbg/screens/all_projects_screen.dart';
 import 'package:kbg/screens/completed_project_screen.dart';
 import 'package:kbg/widgets/add_project_bottom_sheet.dart';

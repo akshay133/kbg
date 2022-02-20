@@ -2,10 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kbg/controller/dashboard_controller.dart';
+import 'package:kbg/screens/photo_view_screen.dart';
+import 'package:kbg/screens/single_project_info_screen.dart';
 
 class GalleryScreen extends StatelessWidget {
-  const GalleryScreen({Key? key}) : super(key: key);
-
+  GalleryScreen({Key? key}) : super(key: key);
+  final dashBordController = Get.put(DashboardController());
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -35,23 +38,30 @@ class GalleryScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        imgs.isNotEmpty
-                            ? Container(
-                                clipBehavior: Clip.antiAlias,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: CachedNetworkImage(
-                                  imageUrl: imgs.first,
-                                  fit: BoxFit.cover,
-                                  height: Get.height * 0.18,
-                                  width: Get.width,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.account_circle_rounded,
-                                size: 32,
+                        if (imgs.isNotEmpty)
+                          InkWell(
+                            onTap: () {
+                              dashBordController.updateDocSnapshot(doc);
+                              Get.to(SingleProjectInfoScreen());
+                            },
+                            child: Container(
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
                               ),
+                              child: CachedNetworkImage(
+                                imageUrl: imgs.first,
+                                fit: BoxFit.cover,
+                                height: Get.height * 0.18,
+                                width: Get.width,
+                              ),
+                            ),
+                          )
+                        else
+                          const Icon(
+                            Icons.account_circle_rounded,
+                            size: 32,
+                          ),
                         Text(
                           doc.get('name'),
                           style: TextStyle(fontWeight: FontWeight.bold),

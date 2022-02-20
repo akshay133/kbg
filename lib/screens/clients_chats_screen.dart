@@ -43,11 +43,13 @@ class _ClientsChatsScreenState extends State<ClientsChatsScreen> {
                 itemBuilder: (ctx, index) {
                   return InkWell(
                     onTap: () {
-                      String roomId = chatRoomId(
-                          authController.box.read(ConstStrings.adminId),
-                          ds[index]['name']);
+                      String roomId =
+                          chatRoomId('admin@gmail.com', ds[index]['email']);
                       Get.to(ChatRoomScreen(
-                          chatRoomId: roomId, user: ds[index]['name']));
+                        chatRoomId: roomId,
+                        user: ds[index]['name'],
+                        sentBy: 'Admin',
+                      ));
                     },
                     child: Container(
                       margin: EdgeInsets.all(6),

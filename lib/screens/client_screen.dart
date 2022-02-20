@@ -119,11 +119,10 @@ class ClientScreen extends StatelessWidget {
                                               color: const Color(0xff75B3FF),
                                               borderRadius:
                                                   BorderRadius.circular(20)),
-                                          child: Column(
-                                              children: List.generate(
-                                                  ds[index]['projects'].length,
-                                                  (index) => Text(
-                                                      '${ds[index]['projects'][index]}'))))
+                                          child: Column(children: [
+                                            Text(
+                                                '${ds[index]['projects'].length}')
+                                          ]))
                                     ],
                                   )
                                 ],

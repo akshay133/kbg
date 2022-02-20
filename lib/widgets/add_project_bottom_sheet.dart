@@ -195,8 +195,11 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                                   ),
                                   ElevatedButton(
                                       onPressed: () {
-                                        dashController.updateList(
-                                            activityController.text);
+                                        final data = {
+                                          'name': activityController.text,
+                                          'percentage': 0
+                                        };
+                                        dashController.updateList(data);
                                         Get.back();
                                       },
                                       child: const Text('Add'))
@@ -220,7 +223,7 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                         (index) => Align(
                               alignment: Alignment.topLeft,
                               child: Text(
-                                  '${index + 1}. ${ctl.activitiesList[index]}'),
+                                  '${index + 1}. ${ctl.activitiesList[index]['name']}'),
                             )),
                   );
                 }),
@@ -231,21 +234,13 @@ class _AddProjectBottomSheetState extends State<AddProjectBottomSheet> {
                       projectTypeController.text.isEmpty) {
                     Get.snackbar("Error!", "All fields re required!");
                   } else {
-                    FirebaseFirestore.instance
-                        .collection("projects")
-                        .doc(projectNumberController.text.trim())
-                        .set({
-                      'name': projectNameController.text,
-                      'number': projectNumberController.text,
-                      'type': projectTypeController.text,
-                      'start_date':
-                          "${selectedEndDate?.toLocal()}".split(' ')[0],
-                      'end_date': "${selectedEndDate?.toLocal()}".split(' ')[0],
-                      'activities': dashController.activitiesList,
-                      'assigned': [],
-                      'imagesUrls': [],
-                      'percentage': 0,
-                    });
+                    authController.storeProjectData(
+                        projectNumberController.text.trim(),
+                        projectNameController.text,
+                        projectTypeController.text,
+                        "${selectedDate?.toLocal()}".split(' ')[0],
+                        "${selectedEndDate?.toLocal()}".split(' ')[0],
+                        dashController.activitiesList);
                   }
                 },
                 child: const Text('Next'))

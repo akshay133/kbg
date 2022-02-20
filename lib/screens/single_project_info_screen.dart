@@ -1,138 +1,143 @@
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:kbg/controller/dashboard_controller.dart';
+import 'package:kbg/screens/photo_view_screen.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
-class SingleProjectInfoScreen extends StatefulWidget {
-  SingleProjectInfoScreen({Key? key, required this.snapshot}) : super(key: key);
-  final DocumentSnapshot snapshot;
-
-  @override
-  State<SingleProjectInfoScreen> createState() =>
-      _SingleProjectInfoScreenState();
-}
-
-class _SingleProjectInfoScreenState extends State<SingleProjectInfoScreen> {
-  final percentageController = TextEditingController();
-  File? _image;
-  String? photoUrl;
-  final ImagePicker _picker = ImagePicker();
-  bool _loading = false;
-  _imgFromCamera() async {
-    final pickedImageFile =
-        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
-
-    setState(() {
-      _image = File(pickedImageFile!.path);
-    });
-
-    UploadTask photoPath = uploadPhoto(_image!);
-    final snapshot = await photoPath.whenComplete(() {});
-    photoUrl = await snapshot.ref.getDownloadURL();
-  }
-
-  uploadPhoto(File image) {
-    DateTime time = DateTime.now();
-    String filename = 'images/projects/${time.toString()}';
-    try {
-      final ref = FirebaseStorage.instance.ref(filename);
-      UploadTask task = ref.putFile(image);
-      return task;
-    } catch (e) {
-      print(e);
-    }
-  }
-
+class SingleProjectInfoScreen extends StatelessWidget {
+  int ssum = 0;
+  var tl;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.snapshot.get('name')),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              CircularPercentIndicator(
-                radius: 130.0,
-                animation: true,
-                animationDuration: 1200,
-                lineWidth: 15.0,
-                percent:
-                    double.parse(widget.snapshot.get('percentage').toString()),
-                center: Text(
-                  widget.snapshot.get('percentage').toString(),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 20.0),
-                ),
-                circularStrokeCap: CircularStrokeCap.butt,
-                backgroundColor: Colors.yellow,
-                progressColor: Colors.red,
-              ),
-              TextField(
-                controller: percentageController,
-                decoration: const InputDecoration(
-                    hintText: 'Add percentage of the running project'),
-              ),
-              InkWell(
-                onTap: () {
-                  _imgFromCamera();
-                },
-                child: Container(
-                  margin: EdgeInsets.only(top: 20),
-                  child: _image == null
-                      ? const Icon(
-                          Icons.camera_alt,
-                          size: 50,
-                        )
-                      : Image.file(
-                          _image!,
-                          height: Get.size.height * 0.2,
-                          width: Get.size.width * 0.5,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    if (percentageController.text.isNotEmpty &&
-                        photoUrl != null) {
-                      setState(() => _loading = true);
-                      FirebaseFirestore.instance
-                          .collection('projects')
-                          .doc(widget.snapshot.get('number'))
-                          .update({
-                        'percentage': percentageController.text,
-                        'imagesUrls':
-                            FieldValue.arrayUnion([photoUrl.toString()])
-                      }).then((value) {
-                        setState(() => _loading = false);
-                        Get.snackbar("Updated", "Successfully");
-                      });
-                    } else {
-                      setState(() => _loading = false);
-                      Get.snackbar("Error!", 'All field required');
-                    }
-                  },
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text('Update'))
-            ],
-          ),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black),
+          titleTextStyle: TextStyle(color: Colors.black),
+          title: Text('Project Info'),
         ),
-      ),
-    );
+        body: GetBuilder<DashboardController>(
+          init: DashboardController(),
+          builder: (_) {
+            List imgs = _.snapshot.get('imagesUrls');
+            List activities = _.snapshot.get('activities');
+            List assigned = _.snapshot.get('assigned');
+            for (var element in activities) {
+              int um = element['percentage'];
+              ssum = ssum + um;
+              tl = ssum / activities.length;
+            }
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      height: Get.height * 0.25,
+                      width: Get.width,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.blue.shade50,
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: Offset(0.5, 0.6))
+                          ],
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: CachedNetworkImage(
+                                  imageUrl: imgs.first,
+                                  fit: BoxFit.cover,
+                                  height: Get.height * 0.15,
+                                  width: Get.width * 0.25,
+                                ),
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    _.snapshot.get('name'),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                        fontSize: 18),
+                                  ),
+                                ],
+                              ),
+                              CircularPercentIndicator(
+                                radius: 45.0,
+                                animation: true,
+                                animationDuration: 1200,
+                                lineWidth: 15.0,
+                                percent: tl.toDouble() / 100,
+                                center: Text(
+                                  tl.toStringAsFixed(2),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.0),
+                                ),
+                                circularStrokeCap: CircularStrokeCap.butt,
+                                backgroundColor: Colors.yellow,
+                                progressColor: Colors.red,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Text(
+                      'More Images',
+                      style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20),
+                    ),
+                    SizedBox(
+                      height: Get.height * 0.02,
+                    ),
+                    GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3),
+                        itemCount: imgs.length,
+                        shrinkWrap: true,
+                        itemBuilder: (ctx, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: InkWell(
+                                onTap: () {
+                                  Get.to(PhotoViewScreen(
+                                    img: imgs[index],
+                                  ));
+                                },
+                                child: Container(
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    child: CachedNetworkImage(
+                                      height: Get.height * 0.18,
+                                      imageUrl: imgs[index],
+                                      fit: BoxFit.cover,
+                                    ))),
+                          );
+                        })
+                  ],
+                ),
+              ),
+            );
+          },
+        ));
   }
 }

@@ -5,16 +5,21 @@ import 'package:kbg/constants/strings.dart';
 import 'package:kbg/controller/auth_controller.dart';
 
 class ChatRoomScreen extends StatelessWidget {
-  ChatRoomScreen({Key? key, required this.chatRoomId, required this.user})
+  ChatRoomScreen(
+      {Key? key,
+      required this.chatRoomId,
+      required this.user,
+      required this.sentBy})
       : super(key: key);
   final String chatRoomId;
   final String user;
+  final String sentBy;
   final TextEditingController _message = TextEditingController();
   final authController = Get.put(AuthController());
   void onSendMessage() async {
     if (_message.text.isNotEmpty) {
       Map<String, dynamic> messages = {
-        "sendby": "Admin",
+        "sendby": sentBy,
         "message": _message.text,
         "type": "text",
         "time": FieldValue.serverTimestamp(),
@@ -60,7 +65,7 @@ class ChatRoomScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         Map<String, dynamic> map = snapshot.data!.docs[index]
                             .data() as Map<String, dynamic>;
-
+                        print('DATA:$map');
                         return messages(Get.size, map, context);
                       },
                     );
@@ -104,10 +109,9 @@ class ChatRoomScreen extends StatelessWidget {
 
   Widget messages(size, Map<String, dynamic> map, BuildContext context) {
     return Container(
-      alignment:
-          map['sendby'] == authController.box.read(ConstStrings.adminEmail)
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
+      alignment: map['sendby'] == sentBy
+          ? Alignment.centerRight
+          : Alignment.centerLeft,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 14),
         margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
@@ -117,8 +121,9 @@ class ChatRoomScreen extends StatelessWidget {
         ),
         child: Text(
           map['message'],
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
+            color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
         ),

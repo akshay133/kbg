@@ -15,6 +15,7 @@ class _LoginWidgetState extends State<LoginWidget> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscureText = true;
+  String role = '';
   final _authController = Get.put(AuthController());
   // Toggles the password show status
   void _toggle() {
@@ -126,10 +127,49 @@ class _LoginWidgetState extends State<LoginWidget> {
               SizedBox(
                 height: Get.height * 0.02,
               ),
-              Text(
-                "Forgot Password?",
-                style: ShapesAndStyles.textStyle
-                    .copyWith(fontWeight: FontWeight.bold),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Forgot Password?",
+                    style: ShapesAndStyles.textStyle
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  PopupMenuButton(
+                    child: Text(role == '' ? 'Select Role ' : role),
+                    itemBuilder: (context) {
+                      return [
+                        const PopupMenuItem(
+                          value: 'admin',
+                          child: Text('Admin'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'client',
+                          child: Text('Client'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'engineer',
+                          child: Text('Engineer'),
+                        )
+                      ];
+                    },
+                    onSelected: (String value) {
+                      if (value == 'admin') {
+                        setState(() {
+                          role = value;
+                        });
+                      } else if (value == 'client') {
+                        setState(() {
+                          role = value;
+                        });
+                      } else if (value == 'engineer') {
+                        setState(() {
+                          role = value;
+                        });
+                      }
+                    },
+                  )
+                ],
               ),
               SizedBox(
                 height: Get.height * 0.08,
@@ -139,7 +179,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                     primary: primaryColor,
                     minimumSize: Size(Get.width, Get.height * 0.05)),
                 onPressed: () {
-                  if (_emailController.text.isEmpty ||
+                  if (_emailController.text.isEmpty &&
                       _passwordController.text.isEmpty) {
                     Get.snackbar(
                       "Required!",
@@ -147,9 +187,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                       snackPosition: SnackPosition.BOTTOM,
                     );
                   }
-                  _authController.loginWithEmailAndPassword(
-                      _emailController.text.trim(),
-                      _passwordController.text.trim());
+                  if (role == '') {
+                    Get.snackbar("Error!", "Please select role");
+                  } else {
+                    _authController.loginWithEmailAndPassword(
+                        _emailController.text.trim(),
+                        _passwordController.text.trim(),
+                        role);
+                  }
                 },
                 child: const Text(
                   'Login',

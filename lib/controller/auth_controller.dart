@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:kbg/constants/shapes_and_styles.dart';
 import 'package:kbg/constants/strings.dart';
+import 'package:kbg/screens/client_home_screen_main.dart';
+import 'package:kbg/screens/engineers_home_screen_main.dart';
 import 'package:kbg/screens/home_screen_main.dart';
 import 'package:kbg/screens/splash_screen.dart';
 import 'package:kbg/widgets/bottom_sheet_widget.dart';
@@ -26,25 +28,45 @@ class AuthController extends GetxController {
 
   handleAuth() async {
     box = GetStorage();
-    box.read(ConstStrings.engineerId);
-    box.read(ConstStrings.clientId);
-
-    if (box.read(ConstStrings.adminId) == null) {
+    updateClientId(box.read(ConstStrings.clientId).toString().obs);
+    updateAdmin(box.read(ConstStrings.adminId).toString().obs);
+    updateEngineerId(box.read(ConstStrings.engineerId).toString().obs);
+    if (box.read(ConstStrings.adminId) == null &&
+        box.read(ConstStrings.clientIdStore) == null &&
+        box.read(ConstStrings.engineerIdStore) == null) {
       Get.offAll(const SplashScreen());
+    } else if (box.read(ConstStrings.clientIdStore) == true) {
+      Get.offAll(ClientHomeScreenMain());
+    } else if (box.read(ConstStrings.engineerIdStore) == true) {
+      Get.offAll(EngineersHomeScreenMain());
     } else {
       Get.offAll(HomeScreenMain());
     }
   }
 
-  loginWithEmailAndPassword(String email, String password) async {
+  loginWithEmailAndPassword(String email, String password, role) async {
     try {
       await _auth
           .signInWithEmailAndPassword(email: email, password: password)
           .then((value) async {
-        box.write(ConstStrings.adminId, value.user!.uid);
-        box.write(ConstStrings.adminEmail, value.user!.email.toString());
-        updateAdminEmail(value.user!.email);
-        Get.offAll(HomeScreenMain());
+        if (role == 'client') {
+          box.write(ConstStrings.clientId, value.user!.uid);
+          box.write(ConstStrings.clientEmail, value.user!.email);
+          box
+              .write(ConstStrings.clientIdStore, true)
+              .then((value) => Get.offAll(ClientHomeScreenMain()));
+        } else if (role == 'engineer') {
+          box.write(ConstStrings.engineerId, value.user!.uid);
+          box.write(ConstStrings.engineerEmail, value.user!.email);
+          box
+              .write(ConstStrings.engineerIdStore, true)
+              .then((value) => Get.offAll(EngineersHomeScreenMain()));
+        } else if (role == 'admin') {
+          box.write(ConstStrings.adminId, value.user!.uid);
+          box.write(ConstStrings.adminEmail, value.user!.email.toString());
+          updateAdminEmail(value.user!.email);
+          Get.offAll(HomeScreenMain());
+        }
       });
     } on FirebaseAuthException catch (err) {
       Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
@@ -112,6 +134,7 @@ class AuthController extends GetxController {
         'imgUrl': imgUrl,
         'gender': gender,
         'projects': [],
+        'role': 'engineer',
         'uid': box.read(ConstStrings.engineerId)
       }).then((value) {
         Get.snackbar("New Engineer Added", "");
@@ -167,6 +190,7 @@ class AuthController extends GetxController {
       'imgUrl': imgUrl,
       'gender': gender,
       'projects': [],
+      'role': 'client',
       'uid': box.read(ConstStrings.clientId)
     };
     try {
@@ -178,6 +202,46 @@ class AuthController extends GetxController {
           .then((value) {
         Get.snackbar("New Client Added", "");
       });
+    } on FirebaseException catch (err) {
+      Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  storeProjectData(projectNum, name, type, selectedStartDate, selectedEndDate,
+      activitiesList) {
+    try {
+      FirebaseFirestore.instance.collection("projects").doc(projectNum).set({
+        'name': name,
+        'number': projectNum,
+        'type': type,
+        'start_date': "${selectedStartDate?.toLocal()}".split(' ')[0],
+        'end_date': "${selectedEndDate?.toLocal()}".split(' ')[0],
+        'activities': activitiesList,
+        'assigned': [],
+        'imagesUrls': [],
+      }).then(
+        (value) => Get.back(),
+      );
+    } on FirebaseAuthException catch (e) {
+      Get.snackbar("error!", e.message!, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  updateSingleEngineerInfo(
+      String uid, String name, String phone, String email, String imgUrl) {
+    final updateData = {
+      "name": name,
+      'phone': phone,
+      'email': email,
+      'imgUrl': imgUrl,
+    };
+    try {
+      Get.snackbar("Please wait...", '', snackPosition: SnackPosition.BOTTOM);
+      FirebaseFirestore.instance
+          .collection('engineers')
+          .doc(uid)
+          .update(updateData)
+          .then((value) => Get.back());
     } on FirebaseException catch (err) {
       Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
     }
@@ -196,7 +260,8 @@ class AuthController extends GetxController {
       FirebaseFirestore.instance
           .collection('clients')
           .doc(uid)
-          .update(updateData);
+          .update(updateData)
+          .then((value) => Get.back());
     } on FirebaseException catch (err) {
       Get.snackbar("error!", err.message!, snackPosition: SnackPosition.BOTTOM);
     }
@@ -255,6 +320,11 @@ class AuthController extends GetxController {
 
   updateClientId(id) {
     clientId = id;
+    update();
+  }
+
+  updateEngineerId(id) {
+    engineerId = id;
     update();
   }
 

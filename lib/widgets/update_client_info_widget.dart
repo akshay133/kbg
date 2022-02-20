@@ -8,8 +8,11 @@ import 'package:kbg/constants/colors.dart';
 import 'package:kbg/controller/auth_controller.dart';
 
 class UpdateClientInfoWidget extends StatefulWidget {
-  const UpdateClientInfoWidget({Key? key, required this.uid}) : super(key: key);
+  const UpdateClientInfoWidget(
+      {Key? key, required this.uid, required this.whichInfo})
+      : super(key: key);
   final String uid;
+  final String whichInfo;
   @override
   _UpdateClientInfoWidgetState createState() => _UpdateClientInfoWidgetState();
 }
@@ -88,13 +91,21 @@ class _UpdateClientInfoWidgetState extends State<UpdateClientInfoWidget> {
         ),
         ElevatedButton(
             onPressed: () {
-              Get.back();
-              authController.updateSingleClientInfo(
-                  widget.uid,
-                  _nameController.text,
-                  _phoneController.text,
-                  _emailController.text.trim(),
-                  photoUrl!);
+              if (widget.whichInfo == 'Client') {
+                authController.updateSingleClientInfo(
+                    widget.uid,
+                    _nameController.text,
+                    _phoneController.text,
+                    _emailController.text.trim(),
+                    photoUrl!);
+              } else {
+                authController.updateSingleEngineerInfo(
+                    widget.uid,
+                    _nameController.text,
+                    _phoneController.text,
+                    _emailController.text.trim(),
+                    photoUrl!);
+              }
             },
             child: Text('Update'))
       ],

@@ -73,6 +73,7 @@ class EngineerScreen extends StatelessWidget {
                                 name: data['name'],
                                 mobile: data['mobile'],
                                 imgUrl: data['imgUrl'],
+                                uid: data['uid'],
                               ));
                             },
                             child: Container(
@@ -118,11 +119,10 @@ class EngineerScreen extends StatelessWidget {
                                               color: const Color(0xff75B3FF),
                                               borderRadius:
                                                   BorderRadius.circular(20)),
-                                          child: Column(
-                                              children: List.generate(
-                                                  ds[index]['projects'].length,
-                                                  (index) => Text(
-                                                      '${ds[index]['projects'][index]}'))))
+                                          child: Column(children: [
+                                            Text(
+                                                '${ds[index]['projects'].length}')
+                                          ]))
                                     ],
                                   )
                                 ],

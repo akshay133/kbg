@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kbg/widgets/update_client_info_widget.dart';
@@ -22,6 +23,9 @@ class SingleInfoClientScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        titleTextStyle: TextStyle(color: Colors.black),
+        iconTheme: IconThemeData(color: Colors.black),
         title: Text('Client Info'),
         actions: [
           IconButton(
@@ -32,6 +36,7 @@ class SingleInfoClientScreen extends StatelessWidget {
                         title: Text('Update info'),
                         content: UpdateClientInfoWidget(
                           uid: uid,
+                          whichInfo: 'Client',
                         )));
               },
               icon: Icon(Icons.edit))
@@ -53,7 +58,39 @@ class SingleInfoClientScreen extends StatelessWidget {
               ),
               Text(name),
               Text(mobile),
-              Text(email)
+              Text(email),
+              Container(
+                margin: EdgeInsets.all(12),
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "Projects",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("projects")
+                      .where('assigned', arrayContains: uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else {
+                      var ds = snapshot.data!.docs;
+                      return Expanded(
+                        child: ListView.builder(
+                            itemCount: ds.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                padding: EdgeInsets.all(12),
+                                child: Text('${ds[index]['name']}'),
+                              );
+                            }),
+                      );
+                    }
+                  })
             ],
           ),
         ),
